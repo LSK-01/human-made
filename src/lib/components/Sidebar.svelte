@@ -2,7 +2,7 @@
 
 </script>
 
-<div class="w-40 h-screen bg-gray-800 p-5">
+<div class="w-40 h-screen bg-primary p-5">
     <!-- Sidebar content here -->
     <ul>
         <a href="/">

@@ -5,7 +5,6 @@
 	import Button from '$lib/components/Button.svelte';
 	export let data;
 	let user = data.user;
-	let usernameTextValue = '';
 </script>
 
 <div>
