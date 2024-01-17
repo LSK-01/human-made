@@ -4,6 +4,5 @@ export interface Creation {
     type: string,
     id?: string,
     uid: string,
-    isNew: boolean,
     isVerified: boolean
 }

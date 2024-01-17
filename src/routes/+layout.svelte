@@ -41,7 +41,7 @@
         console.log('running onmount'); 
 		const creationsListener = onSnapshot(creationsQuery, (snapshot) => {
 			snapshot.docChanges().forEach((change) => {
-				const creation = docToCreation(change.doc.id, change.doc.data());
+				const creation = docToCreation(change.doc);
 				if (change.type === 'added') {
 					console.log('New creation: ', change.doc.data());
 					creations.update((items) => [creation, ...items]);
@@ -70,7 +70,7 @@
 
 <main class="flex">
 	<Sidebar />
-	<div class="flex-grow ml-44">
+	<div class="flex-grow ml-48 mt-5">
 		<slot />
 	</div>
 </main>

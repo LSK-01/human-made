@@ -28,7 +28,6 @@
 			description: creationDescription as string,
 			type: creationType as string,
 			uid: user.uid,
-			isNew: true,
 			isVerified: true
 		};
 
@@ -53,7 +52,7 @@
 <div>
 	<Title>Creations</Title>
 
-	<div class="mt-5 ml-5">
+	<div class="mt-5">
 		{#if startNew}
 			<form on:submit={addCreation}>
 				<div class="flex flex-row">

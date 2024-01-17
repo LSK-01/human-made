@@ -1,4 +1,4 @@
-import type { Actions } from './$types';
+/* import type { Actions } from './$types';
 import {db} from '../../hooks.server';
 import { addDoc, collection, where, query, getDocs, limit } from 'firebase/firestore';
 import { getUser, type User } from '$lib';
@@ -50,3 +50,4 @@ export const load = async ({ cookies, params }) => {
 		newCreations: newCreations
 	};
 };
+ */
