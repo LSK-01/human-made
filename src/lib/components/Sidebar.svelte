@@ -14,7 +14,7 @@
         <a href="/creations">
             <li class="flex flex-col items-center text-white mb-8">
                 <i class="fas fa-home text-xl mb-2"></i> <!-- Larger icon -->
-                <span class="text-xl">Projects</span> <!-- Larger text -->
+                <span class="text-xl">Creations</span> <!-- Larger text -->
             </li>
         </a>
         <a href="/marketplace">

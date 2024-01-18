@@ -4,6 +4,7 @@ abstract class Listener<T>{
     query: Query;
     abstract update(struct: T): void;
     abstract remove(struct: T): void;
+    abstract add(struct: T): void;
     abstract docToType(doc: DocumentSnapshot): T;
 
     constructor(query: Query){

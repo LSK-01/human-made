@@ -2,6 +2,8 @@
 	import type { Commit } from '$lib';
 
 	export let commit: Commit;
+
+    
 </script>
 
 <div class="mt-5 w-7/12 h-40 rounded-2xl bg-opacity-80 bg-primary py-4">

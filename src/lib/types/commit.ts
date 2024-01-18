@@ -3,7 +3,8 @@ import type { Timestamp } from "firebase/firestore"
 export interface Commit {
     percentage: string,
     description: string,
-    started: Timestamp,
+    time: Timestamp,
     uid: string,
-    id?: string
+    id?: string,
+    creationId: string
 }

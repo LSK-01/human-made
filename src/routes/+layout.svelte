@@ -12,7 +12,6 @@
 		DocumentSnapshot,
 		type DocumentData,
 		Query
-
 	} from 'firebase/firestore';
 	import { commits, creations, Listener, docToCreation } from '$lib';
 	import type { Commit, Creation } from '$lib';
@@ -24,9 +23,9 @@
 	let user = data.user;
 
 	class CreationsListener extends Listener<Creation> {
-        constructor(query: Query) {
-            super(query);
-        }
+		constructor(query: Query) {
+			super(query);
+		}
 
 		update(updatedCreation: Creation): void {
 			creations.update((items) => {
@@ -48,54 +47,67 @@
 			});
 		}
 
-		docToType(doc: DocumentSnapshot): Creation {return docToCreation(doc)};
+		docToType(doc: DocumentSnapshot): Creation {
+			return docToCreation(doc);
+		}
+
+		add(addedCreation: Creation): void {
+            creations.update((items) => [addedCreation, ...items]);
+        }
 	}
 
-class CommitsListener extends Listener<Commit> {
+	class CommitsListener extends Listener<Commit> {
+		constructor(query: Query) {
+			super(query);
+		}
 
-    constructor(query: Query) {
-        super(query);
-    }
+		update(updatedCommit: Commit): void {
+			commits.update((items) => {
+				const index = items.findIndex((item) => item.id === updatedCommit.id);
+				if (index !== -1) {
+					return [...items.slice(0, index), updatedCommit, ...items.slice(index + 1)];
+				}
+				return items; // Return the original array if the item wasn't found
+			});
+		}
 
-    update(updatedCommit: Commit): void {
-        commits.update((items) => {
-            const index = items.findIndex((item) => item.id === updatedCommit.id);
-            if (index !== -1) {
-                return [...items.slice(0, index), updatedCommit, ...items.slice(index + 1)];
-            }
-            return items; // Return the original array if the item wasn't found
-        });
-    }
+		remove(removedCommit: Commit): void {
+			commits.update((items) => {
+				const index = items.findIndex((item) => item.id === removedCommit.id);
+				if (index !== -1) {
+					return [...items.slice(0, index), ...items.slice(index + 1)];
+				}
+				return items; // Return the original array if the item wasn't found
+			});
+		}
 
-    remove(removedCreation: Commit): void {
-        commits.update((items) => {
-            const index = items.findIndex((item) => item.id === removedCreation.id);
-            if (index !== -1) {
-                return [...items.slice(0, index), ...items.slice(index + 1)];
-            }
-            return items; // Return the original array if the item wasn't found
-        });
-    }
+		docToType(doc: DocumentSnapshot<DocumentData, DocumentData>): Commit {
+			return docToCommit(doc);
+		}
 
-    docToType(doc: DocumentSnapshot<DocumentData, DocumentData>): Commit {
-        return docToCommit(doc);
-    }
-}
+        add(addedCommit: Commit): void {
+            commits.update((items) => [addedCommit, ...items]);
+        }
+	}
 
-	const commitsListener = new CommitsListener(query(collection(db, 'commits'), where('uid', '==', user.uid), limit(30)));
-    const creationsListener = new CreationsListener(query(collection(db, 'creations'), where('uid', '==', user.uid), limit(30)));
+	const commitsListener = new CommitsListener(
+		query(collection(db, 'commits'), where('uid', '==', user.uid), limit(30))
+	);
+	const creationsListener = new CreationsListener(
+		query(collection(db, 'creations'), where('uid', '==', user.uid), limit(30))
+	);
 
 	onMount(() => {
 		console.log('running onmount in +layout.svelte');
-        creations.set([]);
-        commits.set([]);
+		creations.set([]);
+		commits.set([]);
 
 		const creationsInstance = onSnapshot(creationsListener.query, (snapshot) => {
 			snapshot.docChanges().forEach((change) => {
 				const creation = creationsListener.docToType(change.doc);
 				if (change.type === 'added') {
 					console.log('New creation: ', change.doc.data());
-					creations.update((items) => [creation, ...items]);
+					creationsListener.add(creation);
 				}
 				if (change.type === 'modified') {
 					console.log('Modified creation: ', change.doc.data());
@@ -103,17 +115,17 @@ class CommitsListener extends Listener<Commit> {
 				}
 				if (change.type === 'removed') {
 					console.log('removed creation: ', change.doc.data());
-					creationsListener.update(creation);
+					creationsListener.remove(creation);
 				}
 			});
 		});
 
-        const commitsInstance = onSnapshot(commitsListener.query, (snapshot) => {
+		const commitsInstance = onSnapshot(commitsListener.query, (snapshot) => {
 			snapshot.docChanges().forEach((change) => {
 				const commit = commitsListener.docToType(change.doc);
 				if (change.type === 'added') {
 					console.log('New commit: ', change.doc.data());
-					commits.update((items) => [commit, ...items]);
+					commitsListener.add(commit);
 				}
 				if (change.type === 'modified') {
 					console.log('Modified commit: ', change.doc.data());
@@ -121,16 +133,16 @@ class CommitsListener extends Listener<Commit> {
 				}
 				if (change.type === 'removed') {
 					console.log('removed commit: ', change.doc.data());
-					commitsListener.update(commit);
+					commitsListener.remove(commit);
 				}
 			});
 		});
 
 		return () => {
 			creationsInstance(); // Cleanup listener when the component is destroyed
-            commitsInstance();
+			commitsInstance();
 			creations.set([]);
-            commits.set([]);
+			commits.set([]);
 		};
 	});
 </script>

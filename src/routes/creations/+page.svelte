@@ -1,6 +1,8 @@
 <script lang="ts">
-	import { Title, Button, Subtitle, Textfield, creations, CreationDiv } from '$lib';
+	import { Title, Button, Subtitle, Textfield, creations, CreationDiv, db } from '$lib';
 	import type { Creation } from '$lib';
+	import { Timestamp, addDoc, collection } from 'firebase/firestore';
+	import { onMount } from 'svelte';
 
 	let startNew = false;
 
@@ -26,20 +28,21 @@
 			description: creationDescription as string,
 			type: creationType as string,
 			uid: user.uid,
+			lastVisited: Timestamp.fromDate(new Date()),
 			isVerified: true
 		};
 
-		const response = await fetch('/api/addCreation', {
-			method: 'POST',
-			body: JSON.stringify(newCreation)
-		});
-
-		if (response.ok) {
-			console.log('Form sent!');
-		} else {
-			console.error('Error submitting form');
-		}
+		await addDoc(collection(db, 'creations'), newCreation);
 	};
+
+	onMount(() => {
+		console.log('running onmount');
+		creations.update((items) => {
+			return items.slice().sort((b, a) => {
+				return +a.lastVisited.toDate() - +b.lastVisited.toDate();
+			});
+		});
+	});
 </script>
 
 <svelte:head>

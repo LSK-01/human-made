@@ -21,10 +21,11 @@
 
 	let selectedFiles: FileList;
 	let addingProcess = false;
-    const fileInput = document.getElementById('fileInput')! as HTMLInputElement;
+
 
 	let toggleAddingProcess = () => {
 		addingProcess = !addingProcess;
+        const fileInput = document.getElementById('fileInput')! as HTMLInputElement;
         fileInput.value = '';
 	};
 
@@ -41,16 +42,12 @@
 			description: commitDescription as string,
 			uid: user.uid,
 			percentage: sliderValue as string,
-			started: Timestamp.fromDate(new Date())
+			time: Timestamp.fromDate(new Date()),
+            creationId: creationId
 		};
 
-		const response = await fetch('/api/addCommit', {
-			method: 'POST',
-			body: JSON.stringify(newCommit)
-		});
-
-		const respJson = await response.json();
-		const commitId = respJson.id;
+        const docRef = await addDoc(collection(db, `creations/${creationId}/commits`), newCommit);
+		const commitId = docRef.id;
 
 		const storage = getStorage();
 
@@ -78,6 +75,7 @@
 	};
 
 	let addEvidence = async () => {
+        const fileInput = document.getElementById('fileInput')! as HTMLInputElement;
 		fileInput.click();
 	};
 </script>

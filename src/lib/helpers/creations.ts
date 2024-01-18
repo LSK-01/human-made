@@ -9,6 +9,7 @@ export function docToCreation(doc: DocumentSnapshot): Creation {
         type: data.type,
         id: doc.id,
         uid: data.uid,
+        lastVisited: data.lastVisited,
         isVerified: data.isVerified
     };
 
