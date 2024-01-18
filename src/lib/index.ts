@@ -10,7 +10,8 @@ export type {User} from './types/user';
 export type {Commit} from './types/commit'
 export type {Creation} from './types/creation';
 export {getUser} from './helpers/getUser';
-export {creations} from './stores';
+export {creations, commits} from './stores';
 export {default as CreationDiv} from './components/CreationDiv.svelte';
 export {default as db} from './firebaseClient';
-export {docToCreation} from './helpers/creations';
+export {default as Listener} from './helpers/abstractListener';
+export {docToCreation} from './helpers/creations'; 

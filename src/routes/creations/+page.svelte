@@ -11,12 +11,10 @@
 	export let data;
 	let user = data.user;
 
-
 	let addCreation = async (event: SubmitEvent) => {
 		startNewClick();
 
 		event.preventDefault(); // Prevents the default form submission
-		console.log('runinng addcreation');
 		const formData = new FormData(event.target as HTMLFormElement);
 
 		const creationName = formData.get('creationName');
@@ -31,7 +29,6 @@
 			isVerified: true
 		};
 
-		// Send data to your server-side endpoint
 		const response = await fetch('/api/addCreation', {
 			method: 'POST',
 			body: JSON.stringify(newCreation)
@@ -92,7 +89,7 @@
 		{/if}
 	</div>
 
-	{#each $creations as creation}
+	{#each $creations as creation (creation.id)}
 		<CreationDiv {creation}></CreationDiv>
 	{/each}
 </div>

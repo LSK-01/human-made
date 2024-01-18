@@ -1,4 +1,5 @@
 import { writable } from 'svelte/store';
-import type { Creation } from '$lib';
+import type { Commit, Creation } from '$lib';
 
 export const creations = writable<Creation[]>([]);
+export const commits = writable<Commit[]>([]);

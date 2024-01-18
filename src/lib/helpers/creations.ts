@@ -1,7 +1,7 @@
 import type { Creation } from "$lib";
-import type { DocumentData, DocumentSnapshot } from "firebase/firestore";
+import type { DocumentSnapshot } from "firebase/firestore";
 
-export function docToCreation(doc: DocumentSnapshot){
+export function docToCreation(doc: DocumentSnapshot): Creation {
     const data = doc.data()!;
     const newCreation: Creation = {
         name: data.name,

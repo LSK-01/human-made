@@ -7,6 +7,7 @@ export const load = async ({ params }) => {
 
 	//document snapshot is not serialisable so we use universal load func.
 	return{
-		creation: docSnap
+		creation: docSnap,
+		creationId: params.slug
 	}
 };

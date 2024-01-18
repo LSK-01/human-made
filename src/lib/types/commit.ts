@@ -4,5 +4,6 @@ export interface Commit {
     percentage: string,
     description: string,
     started: Timestamp,
-    evidence: [string]
+    uid: string,
+    id?: string
 }

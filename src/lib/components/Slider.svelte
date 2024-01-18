@@ -17,7 +17,7 @@
         on:input={handleSliderChange}
         class="slider w-full h-2 bg-tertiary rounded-lg appearance-none cursor-pointer"
     />
-    <div class="ml-5">
+    <div class="ml-5" id="sliderValue">
         <Subtitle>{sliderValue}%</Subtitle>
     </div>
 </div>
