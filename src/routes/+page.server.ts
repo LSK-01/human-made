@@ -1,9 +1,7 @@
 import type { Actions } from './$types';
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import {db, app} from '../hooks.server';
-import { doc, setDoc, getFirestore } from 'firebase/firestore';
-import { redirect } from '@sveltejs/kit';
-import {getUser} from '$lib';
+import { doc, setDoc } from 'firebase/firestore';
 
 export const actions = {
 	default: async ({ cookies, request }) => {

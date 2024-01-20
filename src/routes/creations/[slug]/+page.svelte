@@ -4,80 +4,132 @@
 		Button,
 		Subtitle,
 		Textfield,
-		commits,
 		Slider,
 		Info,
-		docToCreation,
-		db
+		db,
+		commitsListener,
+		commits
 	} from '$lib';
 	import type { Commit, Creation } from '$lib';
+	import { CommitDiv } from '$lib';
+
 	export let data;
 	let user = data.user;
-	let creationId = data.creationId;
+	let creation: Creation = data.creation;
 
-	let creation: Creation = docToCreation(data.creation);
 	import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-	import { Timestamp, addDoc, collection } from 'firebase/firestore';
+	import {
+		Timestamp,
+		addDoc,
+		collection,
+		doc,
+		onSnapshot,
+		orderBy,
+		query,
+		setDoc,
+		updateDoc
+	} from 'firebase/firestore';
+	import { onMount } from 'svelte';
 
 	let selectedFiles: FileList;
 	let addingProcess = false;
-
+	let loading = false;
 
 	let toggleAddingProcess = () => {
 		addingProcess = !addingProcess;
-        const fileInput = document.getElementById('fileInput')! as HTMLInputElement;
-        fileInput.value = '';
 	};
 
 	let addProcess = async (event: SubmitEvent) => {
-		toggleAddingProcess();
-
+		loading = true;
 		event.preventDefault();
 		const formData = new FormData(event.target as HTMLFormElement);
 
 		const commitDescription = formData.get('commitDescription');
 		const sliderValue = document.getElementById('sliderValue')?.innerText;
 
-		const newCommit: Commit = {
-			description: commitDescription as string,
-			uid: user.uid,
-			percentage: sliderValue as string,
-			time: Timestamp.fromDate(new Date()),
-            creationId: creationId
-		};
-
-        const docRef = await addDoc(collection(db, `creations/${creationId}/commits`), newCommit);
-		const commitId = docRef.id;
+		let evidence: { [key: string]: string } = {};
 
 		const storage = getStorage();
 
 		if (selectedFiles) {
 			for (let i = 0; i < selectedFiles.length; i++) {
 				const file = selectedFiles[i];
-				const storageRef = ref(storage, `${creationId}/${commitId}/` + file.name);
+				//now we can do like "startsWith(image/)" etc.
+				const fileName = encodeURIComponent(file.type + '+' + String(Date.now()));
+				const storageRef = ref(storage, `${creation.id!}/${fileName}`);
+				const snapshot = await uploadBytes(storageRef, file);
+				const downloadURL = await getDownloadURL(snapshot.ref);
 
-				try {
-					const snapshot = await uploadBytes(storageRef, file);
-
-					const downloadURL = await getDownloadURL(snapshot.ref);
-
-					// Store the download URL in Firestore (or another database)
-					await addDoc(collection(db, `commits/${commitId}/files`), {
-						name: file.name,
-						url: downloadURL,
-						type: file.type
-					});
-				} catch (error) {
-					console.error('Error uploading file:', error);
-				}
+				evidence[fileName] = downloadURL;
 			}
 		}
+
+		const fileInput = document.getElementById('fileInput')! as HTMLInputElement;
+		if (fileInput.value) {
+			fileInput.value = '';
+		}
+
+		const newCommit: Commit = {
+			description: commitDescription as string,
+			uid: user.uid,
+			percentage: Number(sliderValue),
+			time: Timestamp.fromDate(new Date()),
+			creationId: creation.id!,
+			evidence: evidence
+		};
+
+		await addDoc(collection(db, `creations/${creation.id!}/commits`), newCommit);
+		toggleAddingProcess();
+		loading = false;
+
+		//update the percentage on creation
+		await updateDoc(doc(db, 'creations', creation.id!), {
+			percentage: sliderValue
+		});
+		creation.percentage = Number(sliderValue);
 	};
 
 	let addEvidence = async () => {
-        const fileInput = document.getElementById('fileInput')! as HTMLInputElement;
+		const fileInput = document.getElementById('fileInput')! as HTMLInputElement;
 		fileInput.click();
 	};
+
+	async function updateLastV() {
+		const docRef = doc(db, 'creations', creation.id!);
+		await updateDoc(docRef, { lastVisited: Timestamp.fromDate(new Date()) });
+	}
+
+	onMount(() => {
+		console.log(creation.percentage, 'po');
+
+		const commitsInstance = onSnapshot(
+			query(collection(db, `creations/${creation.id}/commits`), orderBy('time', 'asc')),
+			(snapshot) => {
+				snapshot.docChanges().forEach((change) => {
+					const commit = commitsListener.docToType(change.doc);
+					if (change.type === 'added') {
+						console.log('New commit: ', change.doc.data());
+						commitsListener.add(commit);
+					}
+					if (change.type === 'modified') {
+						console.log('Modified commit: ', change.doc.data());
+						commitsListener.update(commit);
+					}
+					if (change.type === 'removed') {
+						console.log('removed commit: ', change.doc.data());
+						commitsListener.remove(commit);
+					}
+				});
+			}
+		);
+		//done here instead of on page load so non-blocking (non essential update anyway)
+		updateLastV();
+
+		return () => {
+			commitsInstance(); // Cleanup listener when the component is destroyed
+			commits.set([]);
+		};
+	});
 </script>
 
 <svelte:head>
@@ -92,7 +144,7 @@
 	<form on:submit={addProcess} class="flex flex-col gap-5 mt-5">
 		<div class="flex flex-row items-baseline text-secondary">
 			<Subtitle>I am</Subtitle>
-			<Slider />
+			<Slider min={creation.percentage} />
 			<Subtitle>complete</Subtitle>
 		</div>
 		<input type="file" id="fileInput" hidden multiple bind:files={selectedFiles} />
@@ -117,19 +169,26 @@
 			/>
 		</div>
 		<div class="">
-			<Button size="md">Commit</Button>
+			<Button size="md">
+				{#if loading}
+					<i class="fas fa-spinner mr-2 animate-spin"></i>
+				{/if}
+				Commit
+			</Button>
 			<Button size="md" submit={false} click={toggleAddingProcess}>Cancel</Button>
 		</div>
 	</form>
 {:else}
-    <div class="mt-5">
-        <Button click={toggleAddingProcess} size="lg">
-            <i class="fas fa-plus text-xl mb-2"></i>
-            Log Creative Process
-        </Button>
-    </div>
-
+	<div class="mt-5">
+		<Button click={toggleAddingProcess} size="lg">
+			<i class="fas fa-plus text-xl mb-2"></i>
+			Log Creative Process
+		</Button>
+	</div>
 {/if}
 <div class="mt-10 text-secondary">
 	<Subtitle>Progress Timeline</Subtitle>
+	{#each $commits as commit (commit.id)}
+		<CommitDiv {commit}></CommitDiv>
+	{/each}
 </div>

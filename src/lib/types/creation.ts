@@ -7,5 +7,6 @@ export interface Creation {
     id?: string,
     uid: string,
     isVerified: boolean,
-    lastVisited: Timestamp
+    lastVisited: Timestamp,
+    percentage: number
 }

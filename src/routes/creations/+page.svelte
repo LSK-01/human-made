@@ -36,7 +36,6 @@
 	};
 
 	onMount(() => {
-		console.log('running onmount');
 		creations.update((items) => {
 			return items.slice().sort((b, a) => {
 				return +a.lastVisited.toDate() - +b.lastVisited.toDate();

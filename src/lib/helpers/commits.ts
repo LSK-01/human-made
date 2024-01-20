@@ -1,5 +1,5 @@
-import type { Commit } from "$lib";
-import type { DocumentSnapshot } from "firebase/firestore";
+import { Listener, commits, type Commit } from "$lib";
+import type { DocumentSnapshot, Query } from "firebase/firestore";
 
 export function docToCommit(doc: DocumentSnapshot): Commit {
     const data = doc.data()!;
@@ -9,8 +9,43 @@ export function docToCommit(doc: DocumentSnapshot): Commit {
         time: data.time,
         id: doc.id,
         uid: data.uid,
-        creationId: data.creationId
+        creationId: data.creationId,
+        evidence: data.evidence
     };
 
     return newCommit;
 }
+
+
+class CommitsListener extends Listener<Commit> {
+
+    update(updatedCommit: Commit): void {
+        commits.update((items) => {
+            const index = items.findIndex((item) => item.id === updatedCommit.id);
+            if (index !== -1) {
+                return [...items.slice(0, index), updatedCommit, ...items.slice(index + 1)];
+            }
+            return items; // Return the original array if the item wasn't found
+        });
+    }
+
+    remove(removedCommit: Commit): void {
+        commits.update((items) => {
+            const index = items.findIndex((item) => item.id === removedCommit.id);
+            if (index !== -1) {
+                return [...items.slice(0, index), ...items.slice(index + 1)];
+            }
+            return items; // Return the original array if the item wasn't found
+        });
+    }
+
+    docToType(doc: DocumentSnapshot): Commit {
+        return docToCommit(doc);
+    }
+
+    add(addedCommit: Commit): void {
+        commits.update((items) => [addedCommit, ...items]);
+    }
+}
+
+export const commitsListener = new CommitsListener();

@@ -14,4 +14,7 @@ export {creations, commits} from './stores';
 export {default as CreationDiv} from './components/CreationDiv.svelte';
 export {default as db} from './firebaseClient';
 export {default as Listener} from './helpers/abstractListener';
+export {default as CommitDiv} from './components/CommitDiv.svelte';
 export {docToCreation} from './helpers/creations'; 
+export {commitsListener} from './helpers/commits';
+export {creationsListener} from './helpers/creations';
