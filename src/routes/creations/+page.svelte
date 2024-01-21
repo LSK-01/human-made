@@ -29,7 +29,8 @@
 			type: creationType as string,
 			uid: user.uid,
 			lastVisited: Timestamp.fromDate(new Date()),
-			isVerified: true
+			isVerified: true,
+			percentage: 0
 		};
 
 		await addDoc(collection(db, 'creations'), newCreation);
