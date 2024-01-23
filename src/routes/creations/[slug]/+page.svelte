@@ -30,6 +30,9 @@
 		updateDoc
 	} from 'firebase/firestore';
 	import { onMount } from 'svelte';
+	import ShowcaseDiv from '$lib/components/ShowcaseDiv.svelte';
+
+	let firstCommit: Commit;
 
 	let selectedFiles: FileList;
 	let addingProcess = false;
@@ -39,7 +42,7 @@
 		addingProcess = !addingProcess;
 	};
 
-	let addProcess = async (event: SubmitEvent) => {
+	let addCommit = async (event: SubmitEvent) => {
 		loading = true;
 		event.preventDefault();
 		const formData = new FormData(event.target as HTMLFormElement);
@@ -82,11 +85,16 @@
 		toggleAddingProcess();
 		loading = false;
 
+		creation.percentage = Number(sliderValue);
 		//update the percentage on creation
 		await updateDoc(doc(db, 'creations', creation.id!), {
-			percentage: sliderValue
+			percentage: creation.percentage
 		});
-		creation.percentage = Number(sliderValue);
+
+		//log to blockchain lolems
+		const resp = await fetch('../api/blockchainCommit', { method: 'POST', body: JSON.stringify("0x84E62744aFA3687D1d9d997Bc515477454463731") });
+		const data = await resp.json();
+		console.log("dataa: ", data);
 	};
 
 	let addEvidence = async () => {
@@ -122,6 +130,8 @@
 				});
 			}
 		);
+
+		console.log('firstcunt; ', firstCommit);
 		//done here instead of on page load so non-blocking (non essential update anyway)
 		updateLastV();
 
@@ -141,7 +151,7 @@
 	<span class="text-tertiary"><Subtitle>{creation.type}</Subtitle></span>
 </div>
 {#if addingProcess}
-	<form on:submit={addProcess} class="flex flex-col gap-5 mt-5">
+	<form on:submit={addCommit} class="flex flex-col gap-5 mt-5">
 		<div class="flex flex-row items-baseline text-secondary">
 			<Subtitle>I am</Subtitle>
 			<Slider min={creation.percentage} />
@@ -188,7 +198,11 @@
 {/if}
 <div class="mt-10 text-secondary">
 	<Subtitle>Progress Timeline</Subtitle>
-	{#each $commits as commit (commit.id)}
-		<CommitDiv {commit}></CommitDiv>
+	{#each $commits as commit, index (commit.id)}
+		{#if index === 0}
+			<CommitDiv {commit} first={true}></CommitDiv>
+		{:else}
+			<CommitDiv {commit}></CommitDiv>
+		{/if}
 	{/each}
 </div>

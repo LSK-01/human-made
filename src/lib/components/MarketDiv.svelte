@@ -12,7 +12,6 @@
 		{commit.description}
 	</div>
 	<div>
-		<!---render some evidence here. gipherise a video, display images, have a plus option to view more-->
 		<i class="fas fa-plus text-xl mb-2"></i>
 	</div>
     <div class="w-10 h-32 bg-quaternary"></div>

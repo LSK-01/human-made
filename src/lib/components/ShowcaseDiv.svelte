@@ -3,7 +3,6 @@
 	import { doc, deleteDoc, updateDoc } from 'firebase/firestore';
 	import { fade } from 'svelte/transition';
 	export let commit: Commit;
-	export let first = false;
 
 	import { db } from '$lib';
 	import Textfield from './Textfield.svelte';
@@ -35,13 +34,7 @@
 	};
 </script>
 
-{#if !first}
-	<div class="w-10 h-10 bg-primary bg-opacity-80 ml-10"></div>
-{:else}
-	<div class="mt-5"></div>
-{/if}
-
-<div class="flex flex-col gap-2 w-6/12 rounded-2xl bg-opacity-80 bg-primary p-5">
+<div class="flex flex-col gap-2 w-5/12 rounded-2xl bg-opacity-80 bg-primary p-5">
 	<div class="flex flex-row gap-5 align-middle">
 		<div class="text-xl text-secondary">
 			{commit.percentage}%

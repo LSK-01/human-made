@@ -10,7 +10,9 @@
 <div>
 	<Title>HumanMade</Title>
 	{#if user !== null}
-		<Subtitle>Welcome back {user.username}</Subtitle>
+		<span class="text-secondary"><Subtitle>Welcome back {user.username}</Subtitle></span>
+		<img src="" alt="">
+		<Button size="md">Log out</Button>
 	{:else}
 		<Subtitle>Welcome</Subtitle>
 		<form method="POST">

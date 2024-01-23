@@ -55,34 +55,37 @@
 	<div class="mt-5">
 		{#if startNew}
 			<form on:submit={addCreation}>
-				<div class="flex flex-row">
-					<Subtitle>This creation is called</Subtitle>
-					<input
-						type="text"
-						name="creationName"
-						class="ml-5 mr-5 focus:outline-none border-b-4 border-secondary focus:ring focus:ring-secondary text-4xl font-bold text-primary"
-					/>
-					<Subtitle>and is</Subtitle>
-					<select
-						name="creationType"
-						class="ml-3 w-52 h-11 border-secondary border-2 text-primary text-4xl font-bold focus:outline-none rounded-xl"
-					>
-						<option value="Visual">Visual</option>
-						<option value="Auditory">Auditory</option>
-						<option value="Written">Written</option>
-					</select>
+				<div class="flex flex-col gap-5">
+					<div class="flex flex-row text-secondary gap-5">
+						<Subtitle>This creation is called</Subtitle>
+						<input
+							type="text"
+							name="creationName"
+							class="ml-5 mr-5 focus:outline-none border-b-4 border-secondary focus:ring focus:ring-secondary text-4xl font-bold text-primary"
+						/>
+						<Subtitle>and is</Subtitle>
+						<select
+							name="creationType"
+							class="ml-3 w-52 h-11 border-secondary border-2 text-primary text-4xl font-bold focus:outline-none rounded-xl"
+						>
+							<option value="Visual">Visual</option>
+							<option value="Auditory">Auditory</option>
+							<option value="Written">Written</option>
+						</select>
+					</div>
+					<div>
+						<Textfield
+							placeholder="Enter a short description about your new creation"
+							name="creationDescription"
+							size="lg"
+						/>
+					</div>
+					<div class=" mt-1">
+						<Button size="md">Create</Button>
+						<Button size="md" submit={false} click={startNewClick}>Cancel</Button>
+					</div>
 				</div>
-				<div class="mt-5">
-					<Textfield
-						placeholder="Enter a short description about your new creation"
-						name="creationDescription"
-						size="lg"
-					/>
-				</div>
-				<div class=" mt-1">
-					<Button size="md">Create</Button>
-					<Button size="md" submit={false} click={startNewClick}>Cancel</Button>
-				</div>
+
 			</form>
 		{:else}
 			<Button click={startNewClick} size="lg">
