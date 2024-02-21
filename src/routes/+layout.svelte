@@ -9,18 +9,12 @@
 		onSnapshot,
 		where,
 		limit,
-		DocumentSnapshot,
-		type DocumentData,
-		Query,
 
 		orderBy
 
 	} from 'firebase/firestore';
-	import { commits, creations, Listener, docToCreation } from '$lib';
-	import type { Commit, Creation } from '$lib';
+	import { creations, products } from '$lib';
 	import { db } from '$lib';
-	import type { RollupCommonJSOptions } from 'vite';
-	import { docToCommit } from '$lib/helpers/commits';
 
 	export let data;
 	let user = data.user;
@@ -30,6 +24,7 @@
 	onMount(() => {
 		console.log('running onmount in +layout.svelte, attaching ccreations listener');
 		creations.set([]);
+		products.set([]);
 
 		const creationsInstance = onSnapshot(query(collection(db, 'creations'), where('uid', '==', user.uid), limit(30))
 , (snapshot) => {

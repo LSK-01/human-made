@@ -18,7 +18,7 @@ export const actions = {
 		} catch {
 			res = await createUserWithEmailAndPassword(auth, email, password);
 			//create a user document as well
-			await setDoc(doc(db, 'users', res.user.uid), {});
+			await setDoc(doc(db, 'users', res.user.uid), {username: res.user.displayName ?? email.substring(0, email.indexOf('@'))});
 		}
 
 		let user = {

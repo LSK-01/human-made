@@ -66,12 +66,12 @@ export const GET = async () => {
 	const blockchainPath = '/Users/god/Documents/thirdYear/cs310/humanmade/blockchain';
 	const abi = await fs.promises.readFile(`${blockchainPath}/ABI.json`, 'utf8');
 	const contractAddr = await fs.promises.readFile(`${blockchainPath}/contractAddress.txt`, 'utf8');
-	const ethNode = await fs.promises.readFile(`${blockchainPath}/ethNode.txt`, 'utf8'); //"HTTP://127.0.0.1:7545";
-
+/* 	const ethNode = await fs.promises.readFile(`${blockchainPath}/ethNode.txt`, 'utf8'); //"HTTP://127.0.0.1:7545";
+ */
     const info = {
         abi: abi,
         contractAddr: contractAddr,
-        ethNode: ethNode
-    }
+/*         ethNode: ethNode
+ */    }
     return json(info);
 };

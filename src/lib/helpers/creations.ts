@@ -11,7 +11,10 @@ export function docToCreation(doc: DocumentSnapshot): Creation {
         uid: data.uid,
         lastVisited: data.lastVisited,
         isVerified: data.isVerified,
-        percentage: data.percentage
+        percentage: data.percentage,
+        isFinished: data.isFinished,
+        started: data.started,
+        username: data.username
     };
 
     return newCreation;

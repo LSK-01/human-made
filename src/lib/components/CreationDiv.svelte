@@ -9,7 +9,7 @@
     }
 </script>
 
-<div on:click={goToCreation} class="mt-5 w-7/12 h-40 rounded-2xl bg-opacity-80 bg-primary py-4">
+<div on:click={goToCreation} class="mt-5 w-7/12 h-40 rounded-2xl bg-opacity-80 bg-primary py-4 hover:cursor-pointer">
     <div class="ml-5 text-xl text-secondary">
         {creation.name}
     </div>

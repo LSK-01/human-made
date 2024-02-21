@@ -8,19 +8,22 @@
 </script>
 
 <div>
-	<Title>HumanMade</Title>
-	{#if user !== null}
-		<span class="text-secondary"><Subtitle>Welcome back {user.username}</Subtitle></span>
-		<img src="" alt="">
-		<Button size="md">Log out</Button>
-	{:else}
-		<Subtitle>Welcome</Subtitle>
-		<form method="POST">
-			<div class="ml-5 mt-5 flex-col flex">
-				<Textfield name="email" placeholder="Email" />
-				<Textfield name="password" placeholder="Password" type="password" />
-				<Button size="md">Login or Sign up</Button>
-			</div>
-		</form>
-	{/if}
+	<div class="flex flex-col gap-5 ml-5">
+		<Title>HumanMade</Title>
+		{#if user !== null}
+			<span class="text-secondary"><Subtitle>Welcome back {user.username}</Subtitle></span>
+			<img src="" alt="">
+			<Button size="md">Log out</Button>
+		{:else}
+			<Subtitle>Welcome</Subtitle>
+			<form method="POST">
+				<div class="flex-col flex">
+					<Textfield name="email" placeholder="Email" />
+					<Textfield name="password" placeholder="Password" />
+					<Button size="md">Login or Sign up</Button>
+				</div>
+			</form>
+		{/if}
+	</div>
+
 </div>

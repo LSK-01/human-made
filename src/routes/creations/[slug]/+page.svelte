@@ -21,6 +21,7 @@
 	import {
 		Timestamp,
 		addDoc,
+		arrayUnion,
 		collection,
 		doc,
 		onSnapshot,
@@ -30,96 +31,117 @@
 		updateDoc
 	} from 'firebase/firestore';
 	import { onMount } from 'svelte';
+
 	import ShowcaseDiv from '$lib/components/ShowcaseDiv.svelte';
+	import type { Product } from '$lib';
+	import ssim from 'ssim.js';
 
-	import fs from 'fs';
-	import Web3 from 'web3';
-
-	async function commit() {
-		console.log('commiting');
-		const deets = await fetch('../api/blockchainCommit', { method: 'GET' });
-		const { abi, contractAddr, ethNode } = await deets.json();
-
-		if (typeof window.ethereum !== 'undefined') {
-			console.log('metamask installed');
-			const web3 = new Web3(window.ethereum);
-			const contract = new web3.eth.Contract(JSON.parse(abi), contractAddr);
-			try {
-				// Request account access
-				await window.ethereum.enable();
-
-				const accounts = await web3.eth.getAccounts();
-				const fromAddress = accounts[0]; // User's address
-
-				// Create a transaction object
-				const txObject = {
-					to: contractAddr,
-					data: contract.methods.makeCommit('commitHash').encodeABI(),
-					//gasPrice: web3.utils.toHex(await web3.eth.getGasPrice()),
-					nonce: await web3.eth.getTransactionCount(fromAddress),
-					from: fromAddress,
-					gasLimit: '0',
-					maxFeePerGas: '0',
-					maxPriorityFeePerGas: '0'
-				};
-				console.log('gas estimating:', txObject);
-
-				// Get current base fee and calculate appropriate maxFeePerGas
-				const latestBlock = await web3.eth.getBlock('latest');
-				const baseFee = latestBlock.baseFeePerGas;
-				const maxPriorityFeePerGas = web3.utils.toWei('2', 'gwei'); // Example priority fee
-				const maxFeePerGas = web3.utils.toHex(Number(baseFee) + Number(maxPriorityFeePerGas));
-
-				txObject.maxFeePerGas = maxFeePerGas;
-				txObject.maxPriorityFeePerGas = maxPriorityFeePerGas;
-
-				// Now estimate gas limit
-				const estimatedGas = await web3.eth.estimateGas(txObject);
-				const buffer = 1.2;
-				txObject.gasLimit = web3.utils.toHex(Math.ceil(buffer * Number(estimatedGas)));
-				// MetaMask will handle signing and sending the transaction
-				const txHash = await web3.eth.sendTransaction(txObject);
-				console.log('Transaction Hash:', txHash);
-				return txHash;
-			} catch (error) {
-				console.error('Error:', error);
-			}
-		} else {
-			console.log('MetaMask is not installed');
-		}
-	}
-
-	let firstCommit: Commit;
+	let latestCommit: Commit;
 
 	let selectedFiles: FileList;
 	let addingProcess = false;
 	let loading = false;
 
+	let addTagName: string = '';
+
+	let sliderValue = creation.percentage;
+
 	let toggleAddingProcess = () => {
 		addingProcess = !addingProcess;
 	};
 
+	let addTag = async () => {
+		const creationRef = doc(db, 'creations', creation.id!);
+		await updateDoc(creationRef, {tags: arrayUnion(addTagName)})
+	}
+
+	function readFileAsArrayBuffer(file: File): Promise<ArrayBuffer> {
+		return new Promise((resolve, reject) => {
+			const reader = new FileReader();
+			reader.onload = () => resolve(reader.result as ArrayBuffer);
+			reader.onerror = (error) => reject(error);
+			reader.readAsArrayBuffer(file);
+		});
+	}
+
+	async function hashFile(file: File): Promise<string> {
+		try {
+			const arrayBuffer: ArrayBuffer = await readFileAsArrayBuffer(file);
+			const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+			return bufferToHex(hashBuffer);
+		} catch (error) {
+			console.error('Error hashing file:', error);
+			return 'hash failed';
+		}
+	}
+
+	function bufferToHex(buffer: ArrayBuffer) {
+		return Array.from(new Uint8Array(buffer))
+			.map((b) => b.toString(16).padStart(2, '0'))
+			.join('');
+	}
+
+	function arrayBufferToBase64(buffer: ArrayBuffer) {
+		let binary = '';
+		const bytes = new Uint8Array(buffer);
+		const len = bytes.byteLength;
+		for (let i = 0; i < len; i++) {
+			binary += String.fromCharCode(bytes[i]);
+		}
+		return window.btoa(binary);
+	}
+
 	let addCommit = async (event: SubmitEvent) => {
 		loading = true;
 		event.preventDefault();
-		const formData = new FormData(event.target as HTMLFormElement);
 
+		//------------------------
+
+		const formData = new FormData(event.target as HTMLFormElement);
 		const commitDescription = formData.get('commitDescription');
-		const sliderValue = document.getElementById('sliderValue')?.innerText;
 
 		let evidence: { [key: string]: string } = {};
 
 		const storage = getStorage();
 
+		let hashes: string[] = [];
+		let tags: {[key: string]: string} = {};
+		
 		if (selectedFiles) {
 			for (let i = 0; i < selectedFiles.length; i++) {
 				const file = selectedFiles[i];
-				//now we can do like "startsWith(image/)" etc.
-				const fileName = encodeURIComponent(file.type + '+' + String(Date.now()));
+				const tag = formData.get(file.name) as string;
+				
+				if (Object.keys(tags).includes(tag)) {
+					console.log('double tag used');
+					//errur here
+				} else {
+					if (tag != '') {
+
+						//get image with same tag in previous commit (top commit)
+						const key: string | undefined = Object.keys($commits[0].evidence).find((key) => key.startsWith(tag));
+						if (key) {
+							const url = $commits[0].evidence[key];
+							const base64Image = arrayBufferToBase64(await file.arrayBuffer());
+
+							const res = await fetch('../api/imageSimilarity', {
+								method: 'POST',
+								body: JSON.stringify({ url: url, imageb64: base64Image })
+							});
+
+							const data = await res.json()
+							console.log('image sim res: ', data);
+							tags[tag] = data.sim;
+						}
+					}
+				}
+
+				const fileName = encodeURIComponent(tag + '+' + file.type + '+' + String(Date.now()));
 				const storageRef = ref(storage, `${creation.id!}/${fileName}`);
 				const snapshot = await uploadBytes(storageRef, file);
 				const downloadURL = await getDownloadURL(snapshot.ref);
 
+				hashes.push(await hashFile(file));
 				evidence[fileName] = downloadURL;
 			}
 		}
@@ -135,20 +157,43 @@
 			percentage: Number(sliderValue),
 			time: Timestamp.fromDate(new Date()),
 			creationId: creation.id!,
-			evidence: evidence
+			evidence: evidence,
+			hashes: hashes,
+			blockchained: false,
+			tags: tags
 		};
 
 		await addDoc(collection(db, `creations/${creation.id!}/commits`), newCommit);
 		toggleAddingProcess();
 		loading = false;
 
-		creation.percentage = Number(sliderValue);
+		await updatePercentage();
+
+		if (creation.isFinished) {
+			const docRef = doc(db, 'creations', creation.id!);
+			await updateDoc(docRef, { isFinished: true });
+			await updatePercentage();
+
+			const product: Product = {
+				name: creation.name,
+				type: creation.type,
+				description: creation.description,
+				creator: creation.username,
+				started: creation.started,
+				ended: Timestamp.fromDate(new Date()),
+				likes: 0
+			};
+
+			await setDoc(doc(db, 'marketplace', creation.id!), product);
+		}
+	};
+
+	let updatePercentage = async () => {
+		creation.percentage = sliderValue;
 		//update the percentage on creation
 		await updateDoc(doc(db, 'creations', creation.id!), {
 			percentage: creation.percentage
 		});
-
-		console.log('commit res: ', await commit());
 	};
 
 	let addEvidence = async () => {
@@ -160,6 +205,15 @@
 		const docRef = doc(db, 'creations', creation.id!);
 		await updateDoc(docRef, { lastVisited: Timestamp.fromDate(new Date()) });
 	}
+
+	let finishCreation = async () => {
+		if (creation.percentage < 100) {
+			toggleAddingProcess();
+			creation.percentage = 100;
+			sliderValue = 100;
+		}
+		creation.isFinished = true;
+	};
 
 	onMount(() => {
 		const commitsInstance = onSnapshot(
@@ -183,7 +237,6 @@
 			}
 		);
 
-		console.log('firstcunt; ', firstCommit);
 		//done here instead of on page load so non-blocking (non essential update anyway)
 		updateLastV();
 
@@ -206,19 +259,29 @@
 	<form on:submit={addCommit} class="flex flex-col gap-5 mt-5">
 		<div class="flex flex-row items-baseline text-secondary">
 			<Subtitle>I am</Subtitle>
-			<Slider min={creation.percentage} />
+			<Slider min={creation.percentage} bind:sliderValue />
 			<Subtitle>complete</Subtitle>
 		</div>
-		<input type="file" id="fileInput" hidden multiple bind:files={selectedFiles} />
-		<Info
-			click={addEvidence}
-			infoText="Upload drafts (screen recordings, screenshots, photos) of work completed since your last commit."
-			buttonText="Upload Evidence"
-		></Info>
+		<input type="file" id="fileInput" name="fileInput" hidden multiple bind:files={selectedFiles} />
+		<div>
+			<Button click={addEvidence} submit={false}>Upload Evidence</Button>
+			<Info
+				infoText="Upload drafts (screen recordings, screenshots, photos) of work completed since your last commit."
+			></Info>
+		</div>
+
 		{#if selectedFiles}
 			{#each selectedFiles as file}
 				<div class="flex flex-row items-baseline">
 					<span class="text-md text-tertiary">{file.name}</span>
+					<select
+						name={`${file.name}`}
+						class="ml-3 w-52 h-11 border-secondary border-2 text-primary text-4xl font-bold focus:outline-none rounded-xl"
+					>
+					{#each creation.tags as tag}
+						<option value={tag}>{tag}</option>
+					{/each}
+					</select>
 				</div>
 			{/each}
 		{/if}
@@ -230,31 +293,47 @@
 				size="lg"
 			/>
 		</div>
-		<div class="">
+		<div>
 			<Button size="md">
 				{#if loading}
-					<i class="fas fa-spinner mr-2 animate-spin"></i>
+					<i class="fas fa-spinner animate-spin"></i>
+				{:else}
+					<i class="fas fa-upload"></i>
 				{/if}
 				Commit
 			</Button>
 			<Button size="md" submit={false} click={toggleAddingProcess}>Cancel</Button>
 		</div>
 	</form>
+{:else if creation.isFinished}
+	<div class="mt-5 text-secondary">
+		<Subtitle>This creation is finished</Subtitle>
+	</div>
 {:else}
-	<div class="mt-5">
-		<Button click={toggleAddingProcess} size="lg">
-			<i class="fas fa-plus text-xl mb-2"></i>
+<div class="flex-col flex gap-5 mt-5">
+		<Button click={toggleAddingProcess} size="lg" icon="fa-plus">
 			Log Creative Process
 		</Button>
+		<Button click={finishCreation} size="lg" icon="fa-check">
+			Finish Creation
+		</Button>
+	
+	<div class="flex flex-row items-center gap-2">
+		<Textfield size="sm" placeholder="Tag name" bind:text={addTagName}></Textfield>
+		<Button click={addTag} size="sm" icon="fa-tag">
+			Add
+		</Button>
 	</div>
+</div>
+
 {/if}
 <div class="mt-10 text-secondary">
 	<Subtitle>Progress Timeline</Subtitle>
 	{#each $commits as commit, index (commit.id)}
 		{#if index === 0}
-			<CommitDiv {commit} first={true}></CommitDiv>
+			<CommitDiv {user} {commit} first={true}></CommitDiv>
 		{:else}
-			<CommitDiv {commit}></CommitDiv>
+			<CommitDiv {user} {commit}></CommitDiv>
 		{/if}
 	{/each}
 </div>

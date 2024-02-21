@@ -30,7 +30,11 @@
 			uid: user.uid,
 			lastVisited: Timestamp.fromDate(new Date()),
 			isVerified: true,
-			percentage: 0
+			percentage: 0,
+			isFinished: false,
+			started: Timestamp.fromDate(new Date()),
+			username: user.username,
+			tags: []
 		};
 
 		await addDoc(collection(db, 'creations'), newCreation);

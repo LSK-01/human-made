@@ -1,18 +1,26 @@
 <script lang="ts">
-	import type { Commit } from '$lib';
+	import type { Commit, Product } from '$lib';
+	import { goto } from '$app/navigation';
+	export let product: Product;
 
-	export let commit: Commit;
+	let goToCreation = () => {
+		goto(`/creations/${product.id}`);
+	}
+
+	let processLike = () => {
+
+	}
 </script>
 
-<div class="mt-5 w-7/12 h-40 rounded-2xl bg-opacity-80 bg-primary py-4">
-	<div class="ml-5 text-xl text-secondary">
-		{commit.percentage}
+<div class="mt-5 pl-5 w-7/12 h-40 rounded-2xl bg-opacity-80 bg-primary py-4 hover:cursor-pointer" on:click={goToCreation}>
+	<div class="text-xl text-secondary">
+		{product.name}
 	</div>
-	<div class="ml-5 text-lg text-white">
-		{commit.description}
+	<div class="text-lg text-white">
+		{product.description}
 	</div>
-	<div>
-		<i class="fas fa-plus text-xl mb-2"></i>
+	<div class="last:text-lg text-tertiary">
+		{product.creator}
 	</div>
-    <div class="w-10 h-32 bg-quaternary"></div>
+	<i class="fas fa-heart text-lg text-white hover:text-secondary cursor-pointer" on:click={processLike}></i>
 </div>

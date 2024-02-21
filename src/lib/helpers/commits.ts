@@ -10,7 +10,10 @@ export function docToCommit(doc: DocumentSnapshot): Commit {
         id: doc.id,
         uid: data.uid,
         creationId: data.creationId,
-        evidence: data.evidence
+        evidence: data.evidence,
+        hashes: data.hashes,
+        blockchained: data.blockchained,
+        tags: data.tags
     };
 
     return newCommit;
