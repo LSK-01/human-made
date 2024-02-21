@@ -17,6 +17,11 @@
 		return parts[1];
 	}
 
+	function extractTag(filename: string) {
+		const parts = decodeURIComponent(filename).split('+');
+		return parts[0];
+	}
+
 	let toggleEditing = () => {
 		editing = !editing;
 	};
@@ -176,6 +181,9 @@
 		<ul class="flex flex-row flex-wrap flex-grow justify-start">
 			{#each Object.entries(commit.evidence) as [filename, url]}
 				<li class="flex-item flex-grow">
+					{#if extractTag(filename) != ''}
+					<i class="fas fa-tag text-primary text-sm">{extractTag(filename)}</i>
+					{/if}
 					{#if extractType(filename).startsWith('image')}
 						<img class="h-24 object-contain rounded-md" src={url} alt={filename} />
 					{:else if extractType(filename).startsWith('audio')}

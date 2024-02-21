@@ -263,7 +263,7 @@
 			<Subtitle>complete</Subtitle>
 		</div>
 		<input type="file" id="fileInput" name="fileInput" hidden multiple bind:files={selectedFiles} />
-		<div>
+		<div class="flex flex-row items-center">
 			<Button click={addEvidence} submit={false}>Upload Evidence</Button>
 			<Info
 				infoText="Upload drafts (screen recordings, screenshots, photos) of work completed since your last commit."
@@ -293,16 +293,11 @@
 				size="lg"
 			/>
 		</div>
-		<div>
-			<Button size="md">
-				{#if loading}
-					<i class="fas fa-spinner animate-spin"></i>
-				{:else}
-					<i class="fas fa-upload"></i>
-				{/if}
+		<div class="flex flex-row gap-2">
+			<Button size="md" icon={loading ? 'fa-spinner animate-spin' : 'fa-upload'}>
 				Commit
 			</Button>
-			<Button size="md" submit={false} click={toggleAddingProcess}>Cancel</Button>
+			<Button size="md" submit={false} click={toggleAddingProcess} icon="fa-cancel">Cancel</Button>
 		</div>
 	</form>
 {:else if creation.isFinished}
