@@ -133,10 +133,11 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 
 <div class="flex flex-col gap-2 w-6/12 rounded-2xl bg-opacity-80 bg-primary p-5">
-	<div class="flex flex-row gap-5 align-middle">
+	<div class="flex flex-row gap-5 items-center">
 		<div class="text-xl text-secondary">
 			{commit.percentage}%
 		</div>
+		<i class="fas fa-microchip {commit.usedAI ? '' : 'hidden'}"></i>
 		{#if commit.uid == user.uid}
 			{#if editing}
 				<Textfield placeholder="Description" id="description" text={commit.description} />

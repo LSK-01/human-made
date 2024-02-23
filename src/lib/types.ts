@@ -10,7 +10,8 @@ export interface Commit {
     evidence: { [key: string]: string },
     hashes: string[],
     blockchained: boolean,
-    tags: { [key: string]: number }
+    tags: { [key: string]: number },
+    usedAI: boolean
 }
 
 export interface Creation {

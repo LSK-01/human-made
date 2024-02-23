@@ -38,6 +38,7 @@
 	let selectedFiles: FileList;
 	let addingProcess = false;
 	let loading = false;
+	let usedAI = false;
 
 	let addTagName: string = '';
 
@@ -144,7 +145,8 @@
 			evidence: evidence,
 			hashes: hashes,
 			blockchained: false,
-			tags: tags
+			tags: tags,
+			usedAI: usedAI
 		};
 
 		await addDoc(collection(db, `creations/${creation.id!}/commits`), newCommit);
@@ -300,12 +302,13 @@
 			{/each}
 		{/if}
 
-		<div>
+		<div class="flex flex-row gap-2">
 			<Textfield
 				placeholder="Enter a short description about progress since your last log."
 				name="commitDescription"
 				size="lg"
 			/>
+			<Button size="md" click={() => {usedAI = !usedAI}} submit={false}>{usedAI ? 'Used AI' : 'No AI'}</Button>
 		</div>
 		<div class="flex flex-row gap-2">
 			<Button size="md" icon={loading ? 'fa-spinner animate-spin' : 'fa-upload'}>Commit</Button>

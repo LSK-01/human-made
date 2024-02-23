@@ -1,5 +1,5 @@
 import { Listener, commits, type Commit } from "$lib";
-import type { DocumentSnapshot, Query } from "firebase/firestore";
+import type { DocumentSnapshot } from "firebase/firestore";
 
 export function docToCommit(doc: DocumentSnapshot): Commit {
     const data = doc.data()!;
@@ -13,7 +13,8 @@ export function docToCommit(doc: DocumentSnapshot): Commit {
         evidence: data.evidence,
         hashes: data.hashes,
         blockchained: data.blockchained,
-        tags: data.tags
+        tags: data.tags,
+        usedAI: data.usedAI
     };
 
     return newCommit;
