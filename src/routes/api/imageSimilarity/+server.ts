@@ -14,5 +14,5 @@ export const POST = async ({ request }) => {
 
 	const obj = await res.json();
 	console.log('json: ', obj);
-	return json({sim: obj.sim});
+	return json({sim: obj.similarity});
 };

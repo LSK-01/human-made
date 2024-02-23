@@ -34,9 +34,6 @@
 
 	import ShowcaseDiv from '$lib/components/ShowcaseDiv.svelte';
 	import type { Product } from '$lib';
-	import ssim from 'ssim.js';
-
-	let latestCommit: Commit;
 
 	let selectedFiles: FileList;
 	let addingProcess = false;
@@ -51,9 +48,14 @@
 	};
 
 	let addTag = async () => {
+		if (addTagName == '') {
+			return;
+		}
 		const creationRef = doc(db, 'creations', creation.id!);
-		await updateDoc(creationRef, {tags: arrayUnion(addTagName)})
-	}
+		creation.tags = [...creation.tags, addTagName];
+		await updateDoc(creationRef, { tags: arrayUnion(addTagName) });
+		addTagName = '';
+	};
 
 	function readFileAsArrayBuffer(file: File): Promise<ArrayBuffer> {
 		return new Promise((resolve, reject) => {
@@ -95,8 +97,6 @@
 		loading = true;
 		event.preventDefault();
 
-		//------------------------
-
 		const formData = new FormData(event.target as HTMLFormElement);
 		const commitDescription = formData.get('commitDescription');
 
@@ -105,35 +105,19 @@
 		const storage = getStorage();
 
 		let hashes: string[] = [];
-		let tags: {[key: string]: string} = {};
-		
+		let tags: { [key: string]: number } = {};
+
 		if (selectedFiles) {
 			for (let i = 0; i < selectedFiles.length; i++) {
 				const file = selectedFiles[i];
 				const tag = formData.get(file.name) as string;
-				
+
 				if (Object.keys(tags).includes(tag)) {
 					console.log('double tag used');
-					//errur here
+					//TODO error here
 				} else {
-					if (tag != '') {
-
-						//get image with same tag in previous commit (top commit)
-						const key: string | undefined = Object.keys($commits[0].evidence).find((key) => key.startsWith(tag));
-						if (key) {
-							const url = $commits[0].evidence[key];
-							const base64Image = arrayBufferToBase64(await file.arrayBuffer());
-
-							const res = await fetch('../api/imageSimilarity', {
-								method: 'POST',
-								body: JSON.stringify({ url: url, imageb64: base64Image })
-							});
-
-							const data = await res.json()
-							console.log('image sim res: ', data);
-							tags[tag] = data.sim;
-						}
-					}
+					const simScore = await getSim(file, tag);
+					if (simScore) {(tags[tag] = simScore as number);};
 				}
 
 				const fileName = encodeURIComponent(tag + '+' + file.type + '+' + String(Date.now()));
@@ -215,6 +199,32 @@
 		creation.isFinished = true;
 	};
 
+	let getSim = async (file: File, tag: string) => {
+		if (tag != '') {
+			//get image with same tag in previous commit (top commit)
+			const key: string | undefined =
+				$commits.length == 0
+					? undefined
+					: Object.keys($commits[0].evidence).find((key) => key.startsWith(tag));
+
+			if (key) {
+				const url = $commits[0].evidence[key];
+				const base64Image = arrayBufferToBase64(await file.arrayBuffer());
+
+				const res = await fetch('../api/imageSimilarity', {
+					method: 'POST',
+					body: JSON.stringify({ url: url, imageb64: base64Image })
+				});
+
+				const data = await res.json();
+				console.log('image sim res: ', data.sim);
+				return data.sim;
+			}
+		}
+
+		return null;
+	};
+
 	onMount(() => {
 		const commitsInstance = onSnapshot(
 			query(collection(db, `creations/${creation.id}/commits`), orderBy('time', 'asc')),
@@ -263,24 +273,28 @@
 			<Subtitle>complete</Subtitle>
 		</div>
 		<input type="file" id="fileInput" name="fileInput" hidden multiple bind:files={selectedFiles} />
-		<div class="flex flex-row items-center">
+		<div class="flex flex-row items-center gap-2">
 			<Button click={addEvidence} submit={false}>Upload Evidence</Button>
 			<Info
 				infoText="Upload drafts (screen recordings, screenshots, photos) of work completed since your last commit."
 			></Info>
 		</div>
-
+		<div class="flex flex-row items-center gap-2">
+			<Textfield size="sm" placeholder="Tag name" bind:text={addTagName}></Textfield>
+			<Button click={addTag} submit={false} size="sm" icon="fa-tag">Add</Button>
+		</div>
 		{#if selectedFiles}
 			{#each selectedFiles as file}
-				<div class="flex flex-row items-baseline">
-					<span class="text-md text-tertiary">{file.name}</span>
+				<div class="flex flex-row items-center">
+					<span class="text-md text-primary">{file.name}</span>
 					<select
 						name={`${file.name}`}
-						class="ml-3 w-52 h-11 border-secondary border-2 text-primary text-4xl font-bold focus:outline-none rounded-xl"
+						class="ml-1 w-20 h-6 border-secondary border-2 text-primary text-sm font-bold focus:outline-none rounded-xl"
 					>
-					{#each creation.tags as tag}
-						<option value={tag}>{tag}</option>
-					{/each}
+						<option value="">No tag</option>
+						{#each creation.tags as tag}
+							<option value={tag}>{tag}</option>
+						{/each}
 					</select>
 				</div>
 			{/each}
@@ -294,9 +308,7 @@
 			/>
 		</div>
 		<div class="flex flex-row gap-2">
-			<Button size="md" icon={loading ? 'fa-spinner animate-spin' : 'fa-upload'}>
-				Commit
-			</Button>
+			<Button size="md" icon={loading ? 'fa-spinner animate-spin' : 'fa-upload'}>Commit</Button>
 			<Button size="md" submit={false} click={toggleAddingProcess} icon="fa-cancel">Cancel</Button>
 		</div>
 	</form>
@@ -305,28 +317,17 @@
 		<Subtitle>This creation is finished</Subtitle>
 	</div>
 {:else}
-<div class="flex-col flex gap-5 mt-5">
-		<Button click={toggleAddingProcess} size="lg" icon="fa-plus">
-			Log Creative Process
-		</Button>
-		<Button click={finishCreation} size="lg" icon="fa-check">
-			Finish Creation
-		</Button>
-	
-	<div class="flex flex-row items-center gap-2">
-		<Textfield size="sm" placeholder="Tag name" bind:text={addTagName}></Textfield>
-		<Button click={addTag} size="sm" icon="fa-tag">
-			Add
-		</Button>
+	<div class="flex-col flex gap-5 mt-5">
+		<Button click={toggleAddingProcess} size="lg" icon="fa-plus">Log Creative Process</Button>
+		<Button click={finishCreation} size="lg" icon="fa-check">Finish Creation</Button>
 	</div>
-</div>
-
 {/if}
 <div class="mt-10 text-secondary">
 	<Subtitle>Progress Timeline</Subtitle>
+	<div class="h-5"></div>
 	{#each $commits as commit, index (commit.id)}
-		{#if index === 0}
-			<CommitDiv {user} {commit} first={true}></CommitDiv>
+		{#if index === $commits.length - 1}
+			<CommitDiv {user} {commit} last={true}></CommitDiv>
 		{:else}
 			<CommitDiv {user} {commit}></CommitDiv>
 		{/if}

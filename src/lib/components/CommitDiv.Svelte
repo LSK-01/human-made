@@ -4,13 +4,15 @@
 	import { fade } from 'svelte/transition';
 	export let commit: Commit;
 	export let user: User;
-	export let first = false;
+	export let last = false;
 
 	import { db } from '$lib';
 	import Textfield from './Textfield.svelte';
 
 	let editing = false;
 	let metamask = false;
+
+	const nonSimTags = Object.entries(commit.tags).filter(([key, value]) => value < 0.5);
 
 	function extractType(filename: string) {
 		const parts = decodeURIComponent(filename).split('+');
@@ -127,12 +129,6 @@
 	});
 </script>
 
-{#if !first}
-	<div class="w-10 h-10 bg-primary bg-opacity-80 ml-10"></div>
-{:else}
-	<div class="mt-5"></div>
-{/if}
-
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 
@@ -182,7 +178,7 @@
 			{#each Object.entries(commit.evidence) as [filename, url]}
 				<li class="flex-item flex-grow">
 					{#if extractTag(filename) != ''}
-					<i class="fas fa-tag text-primary text-sm">{extractTag(filename)}</i>
+						<i class="fas fa-tag text-primary text-sm">{extractTag(filename)}</i>
 					{/if}
 					{#if extractType(filename).startsWith('image')}
 						<img class="h-24 object-contain rounded-md" src={url} alt={filename} />
@@ -206,3 +202,15 @@
 		</ul>
 	</div>
 </div>
+{#if !last}
+	<div class="flex flex-row gap-10 ml-10">
+		<div class="w-10 h-10 bg-primary bg-opacity-80"></div>
+		{#if nonSimTags.length > 0}
+			<div class=" w-36 h-10 bg-secondary bg-opacity-80 text-primary flex flex-col flex-wrap">
+				{#each nonSimTags as [tag, value]}
+				<i class="fas fa-tag text-primary text-sm">{tag}: {value.toFixed(1)}</i>
+				{/each}
+			</div>
+		{/if}
+	</div>
+{/if}

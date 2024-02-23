@@ -14,7 +14,8 @@ export function docToCreation(doc: DocumentSnapshot): Creation {
         percentage: data.percentage,
         isFinished: data.isFinished,
         started: data.started,
-        username: data.username
+        username: data.username,
+        tags: data.tags
     };
 
     return newCreation;

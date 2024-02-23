@@ -59,13 +59,13 @@
 	<div class="mt-5">
 		{#if startNew}
 			<form on:submit={addCreation}>
-				<div class="flex flex-col gap-5">
-					<div class="flex flex-row text-secondary gap-5">
+				<div class="flex flex-col gap-5 pr-5">
+					<div class="flex flex-row text-secondary flex-wrap items-center gap-2">
 						<Subtitle>This creation is called</Subtitle>
 						<input
 							type="text"
 							name="creationName"
-							class="ml-5 mr-5 focus:outline-none border-b-4 border-secondary focus:ring focus:ring-secondary text-4xl font-bold text-primary"
+							class="focus:outline-none border-b-4 border-secondary focus:ring focus:ring-secondary text-4xl font-bold text-primary"
 						/>
 						<Subtitle>and is</Subtitle>
 						<select
@@ -84,16 +84,15 @@
 							size="lg"
 						/>
 					</div>
-					<div class=" mt-1">
-						<Button size="md">Create</Button>
-						<Button size="md" submit={false} click={startNewClick}>Cancel</Button>
+					<div class="flex flex-row gap-2">
+						<Button size="md" icon="fa-brush">Create</Button>
+						<Button size="md" submit={false} click={startNewClick} icon="fa-cancel">Cancel</Button>
 					</div>
 				</div>
 
 			</form>
 		{:else}
-			<Button click={startNewClick} size="lg">
-				<i class="fas fa-plus text-xl mb-2"></i>
+			<Button click={startNewClick} size="lg" icon="fa-plus">
 				Start something new
 			</Button>
 		{/if}
