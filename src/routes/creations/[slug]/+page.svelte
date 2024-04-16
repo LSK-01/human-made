@@ -138,7 +138,7 @@
 
 		const newCommit: Commit = {
 			description: commitDescription as string,
-			uid: user.uid,
+			uid: user!.uid,
 			percentage: Number(sliderValue),
 			time: Timestamp.fromDate(new Date()),
 			creationId: creation.id!,

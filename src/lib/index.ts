@@ -19,5 +19,4 @@ export {queries, loadMarketplace} from './helpers/products';
 export {default as ShowcaseDiv} from './components/ShowcaseDiv.svelte';
 export {getGasPrice} from './helpers/gasEstimates';
 export type {Product, User, Commit, Creation} from './types';
-export {products} from './stores';
 export {docToProduct} from './helpers/products';

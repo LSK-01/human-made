@@ -13,7 +13,7 @@
 		orderBy
 
 	} from 'firebase/firestore';
-	import { creations, products } from '$lib';
+	import { creations } from '$lib';
 	import { db } from '$lib';
 
 	export let data;
@@ -24,9 +24,8 @@
 	onMount(() => {
 		console.log('running onmount in +layout.svelte, attaching ccreations listener');
 		creations.set([]);
-		products.set([]);
 
-		const creationsInstance = onSnapshot(query(collection(db, 'creations'), where('uid', '==', user.uid), limit(30))
+		const creationsInstance = onSnapshot(query(collection(db, 'creations'), where('uid', '==', user!.uid), limit(30))
 , (snapshot) => {
 			snapshot.docChanges().forEach((change) => {
 				const creation = creationsListener.docToType(change.doc);

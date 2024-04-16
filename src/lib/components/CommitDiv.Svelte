@@ -1,9 +1,8 @@
 <script lang="ts">
 	import type { Commit, User } from '$lib';
 	import { doc, deleteDoc, updateDoc } from 'firebase/firestore';
-	import { fade } from 'svelte/transition';
 	export let commit: Commit;
-	export let user: User;
+	export let user: User | null;
 	export let last = false;
 
 	import { db } from '$lib';
@@ -12,7 +11,7 @@
 	let editing = false;
 	let metamask = false;
 
-	const nonSimTags = Object.entries(commit.tags).filter(([key, value]) => value < 0.5);
+	const nonSimTags = Object.entries(commit.tags).filter(([key, value]) => value < 0.6);
 
 	function extractType(filename: string) {
 		const parts = decodeURIComponent(filename).split('+');
@@ -83,7 +82,7 @@
 				// Get current base fee and calculate appropriate maxFeePerGas
 				const latestBlock = await web3.eth.getBlock('latest');
 				const baseFee = latestBlock.baseFeePerGas;
-				const maxPriorityFeePerGas = web3.utils.toWei('2', 'gwei'); // Example priority fee
+				const maxPriorityFeePerGas = web3.utils.toWei('0', 'gwei'); // Example priority fee
 				const maxFeePerGas = web3.utils.toHex(Number(baseFee) + Number(maxPriorityFeePerGas));
 
 				txObject.maxFeePerGas = maxFeePerGas;
@@ -138,7 +137,7 @@
 			{commit.percentage}%
 		</div>
 		<i class="fas fa-microchip {commit.usedAI ? '' : 'hidden'}"></i>
-		{#if commit.uid == user.uid}
+		{#if commit.uid == (user ? user.uid : '')}
 			{#if editing}
 				<Textfield placeholder="Description" id="description" text={commit.description} />
 				<i
@@ -209,7 +208,7 @@
 		{#if nonSimTags.length > 0}
 			<div class=" w-36 h-10 bg-secondary bg-opacity-80 text-primary flex flex-col flex-wrap">
 				{#each nonSimTags as [tag, value]}
-				<i class="fas fa-tag text-primary text-sm">{tag}: {value.toFixed(1)}</i>
+				<i class="fas fa-tag text-primary text-xs">{tag}: {value.toFixed(1)}</i>
 				{/each}
 			</div>
 		{/if}

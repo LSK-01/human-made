@@ -1,4 +1,4 @@
-import { Listener, db, products} from "$lib";
+import { db} from "$lib";
 import type { Product } from "$lib";
 import { Query, collection, getDocs, limit, orderBy, query, where, type DocumentSnapshot } from "firebase/firestore";
 
@@ -11,7 +11,7 @@ export function docToProduct(doc: DocumentSnapshot): Product {
         id: doc.id,
         started: data.started,
         ended: data.ended,
-        creator: data.username,
+        creator: data.creator,
         likes: data.likes
     };
 

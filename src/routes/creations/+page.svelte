@@ -27,13 +27,13 @@
 			name: creationName as string,
 			description: creationDescription as string,
 			type: creationType as string,
-			uid: user.uid,
+			uid: user!.uid,
 			lastVisited: Timestamp.fromDate(new Date()),
 			isVerified: true,
 			percentage: 0,
 			isFinished: false,
 			started: Timestamp.fromDate(new Date()),
-			username: user.username,
+			username: user!.username,
 			tags: []
 		};
 
@@ -41,8 +41,8 @@
 	};
 
 	onMount(() => {
-		creations.update((items) => {
-			return items.slice().sort((b, a) => {
+		creations.update((items: any) => {
+			return items.slice().sort((b: any, a: any) => {
 				return +a.lastVisited.toDate() - +b.lastVisited.toDate();
 			});
 		});

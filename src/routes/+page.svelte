@@ -5,25 +5,30 @@
 	import Button from '$lib/components/Button.svelte';
 	export let data;
 	let user = data.user;
+
+	let clearUser = () => {
+		user = null;
+	};
 </script>
 
 <div>
-	<div class="flex flex-col gap-5 ml-5">
+	<div class="flex flex-col gap-2 ml-5 text-secondary">
 		<Title>HumanMade</Title>
 		{#if user !== null}
-			<span class="text-secondary"><Subtitle>Welcome back {user.username}</Subtitle></span>
-			<img src="" alt="">
-			<Button size="md">Log out</Button>
+			<Subtitle>Welcome back {user.username}</Subtitle>
+			<form method="POST" action="?/logout">
+				<Button size="md">Log out</Button>
+
+			</form>
 		{:else}
 			<Subtitle>Welcome</Subtitle>
-			<form method="POST">
-				<div class="flex-col flex">
+			<form method="POST" action="?/login">
+				<div class="flex-col flex gap-2">
 					<Textfield name="email" placeholder="Email" />
-					<Textfield name="password" placeholder="Password" />
-					<Button size="md">Login or Sign up</Button>
+					<Textfield name="password" placeholder="Password" type="password" />
+					<Button size="lg">Login or Sign up</Button>
 				</div>
 			</form>
 		{/if}
 	</div>
-
 </div>

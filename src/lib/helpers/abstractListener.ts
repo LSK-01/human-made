@@ -5,10 +5,6 @@ abstract class Listener<T>{
     abstract remove(struct: T): void;
     abstract add(struct: T): void;
     abstract docToType(doc: DocumentSnapshot): T;
-
-    constructor(){
-
-    }
 }
 
 export default Listener;
