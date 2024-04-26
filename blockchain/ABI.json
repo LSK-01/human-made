@@ -1,0 +1,34 @@
+[
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string[]",
+				"name": "commitHash",
+				"type": "string[]"
+			}
+		],
+		"name": "CommitMade",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string[]",
+				"name": "commitHash",
+				"type": "string[]"
+			}
+		],
+		"name": "makeCommit",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+]
