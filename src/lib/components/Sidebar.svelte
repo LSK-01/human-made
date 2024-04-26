@@ -1,7 +1,3 @@
-<script>
-
-</script>
-
 <div class="fixed top-0 left-0 w-40 h-screen bg-primary p-5">
     <!-- Sidebar content here -->
     <ul>

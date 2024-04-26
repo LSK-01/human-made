@@ -11,6 +11,10 @@
 	};
 </script>
 
+<svelte:head>
+	<title>HumanMade</title>
+</svelte:head>
+
 <div>
 	<div class="flex flex-col gap-2 ml-5 text-secondary">
 		<Title>HumanMade</Title>
@@ -32,3 +36,7 @@
 		{/if}
 	</div>
 </div>
+
+<footer class="fixed left-23 bottom-0">
+	<p>Files uploaded to progress timelines will be processed by a microservice running on Google Cloud. All data is stored using Firebase.</p>
+</footer>

@@ -5,6 +5,7 @@ const backendURL = "http://127.0.0.1:5000";
 export const POST = async ({ request }) => {
 	const data = await request.json();
 	const { url, imageb64 } = data;
+	console.log('url: ', url);
 
 	const res = await fetch(backendURL + '/imageSimilarity', {
 		method: 'POST',

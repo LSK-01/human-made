@@ -11,7 +11,7 @@
 	let editing = false;
 	let metamask = false;
 
-	const nonSimTags = Object.entries(commit.tags).filter(([key, value]) => value < 0.6);
+	const nonSimTags = Object.entries(commit.tags).filter(([key, value]) => value < 0.5);
 
 	function extractType(filename: string) {
 		const parts = decodeURIComponent(filename).split('+');

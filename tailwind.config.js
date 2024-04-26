@@ -18,7 +18,6 @@ export default {
         '2xl': '2rem',
       },
     },
-
   },
   plugins: [],
 }

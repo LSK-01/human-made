@@ -8,10 +8,7 @@
 		collection,
 		onSnapshot,
 		where,
-		limit,
-
-		orderBy
-
+		limit
 	} from 'firebase/firestore';
 	import { creations } from '$lib';
 	import { db } from '$lib';
@@ -25,7 +22,7 @@
 		console.log('running onmount in +layout.svelte, attaching ccreations listener');
 		creations.set([]);
 
-		const creationsInstance = onSnapshot(query(collection(db, 'creations'), where('uid', '==', user!.uid), limit(30))
+		const creationsInstance = onSnapshot(query(collection(db, 'creations'), where('uid', '==', user?.uid ?? 'null'), limit(30))
 , (snapshot) => {
 			snapshot.docChanges().forEach((change) => {
 				const creation = creationsListener.docToType(change.doc);
@@ -53,6 +50,7 @@
 
 <svelte:head>
 	<link rel="stylesheet" href={fontAwesomePath} />
+	<meta name="description" content="HumanMade">
 </svelte:head>
 
 <main class="flex">

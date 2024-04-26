@@ -2,7 +2,6 @@
     import {Title, loadMarketplace, queries, type Product} from '$lib';
 	import MarketDiv from '$lib/components/MarketDiv.svelte';
 	import type { Query } from 'firebase/firestore';
-	import { onMount } from 'svelte';
 
     export let data;
     let marketplace: Product[] = data.marketplace;

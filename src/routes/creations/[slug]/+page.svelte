@@ -8,7 +8,10 @@
 		Info,
 		db,
 		commitsListener,
-		commits
+		commits,
+
+		creations
+
 	} from '$lib';
 	import type { Commit, Creation } from '$lib';
 	import { CommitDiv } from '$lib';
@@ -184,6 +187,8 @@
 
 	let addEvidence = async () => {
 		const fileInput = document.getElementById('fileInput')! as HTMLInputElement;
+		console.log('clickin', fileInput)
+
 		fileInput.click();
 	};
 
