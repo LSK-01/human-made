@@ -14,7 +14,7 @@
 
 	} from '$lib';
 	import type { Commit, Creation } from '$lib';
-	import { CommitDiv } from '$lib';
+	import { CommitDiv } from '$lib'
 
 	export let data;
 	let user = data.user;
